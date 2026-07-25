@@ -1,0 +1,28 @@
+{# Scorecard template. Rendered by report/scorecard.py. #}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Agent Red Team — {{ scorecard.target_name }}</title>
+</head>
+<body>
+  <h1>Agent Red Team Report</h1>
+  <h2>{{ scorecard.target_name }}</h2>
+  <p><b>ASR:</b> {{ (scorecard.asr * 100) | round(1) }}%</p>
+  <p><b>Unique findings:</b> {{ scorecard.unique_findings | length }}</p>
+  <p><b>Attempts to first break:</b> {{ scorecard.attempts_to_first_break }}</p>
+  <p><b>Coverage:</b> {{ (scorecard.coverage_pct * 100) | round(1) }}%</p>
+
+  <h3>Findings</h3>
+  <ul>
+  {% for f in scorecard.unique_findings %}
+    <li>
+      <b>[{{ f.severity | upper }}]</b> {{ f.title }}
+      ({{ f.family.value }} &rarr; {{ f.surface }})
+      <pre>{{ f.minimal_payload }}</pre>
+      {% if f.fix_hint %}<em>Fix: {{ f.fix_hint }}</em>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+</body>
+</html>
