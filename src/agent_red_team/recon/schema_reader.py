@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from agent_red_team.config import RedTeamConfig, TargetMode
 from agent_red_team.contracts import AttackMap, SurfaceKind, ToolInfo
+from agent_red_team.recon.warmup import observe_format
 from agent_red_team.target import demo_tools
 
 
@@ -33,5 +34,5 @@ def build_attack_map(config: RedTeamConfig, tools: list[ToolInfo]) -> AttackMap:
         forbidden_tools=list(config.forbidden_tools),
         must_never=list(config.must_never),
         canary=config.canary,
-        observed_result_format="plaintext",
+        observed_result_format=observe_format(config),
     )
