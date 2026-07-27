@@ -22,8 +22,10 @@ def run(
     from rich.table import Table
 
     from agent_red_team.config import RedTeamConfig
+    from agent_red_team.observability.tracing import init_tracing
     from agent_red_team.orchestrator import Orchestrator
 
+    init_tracing()
     cfg = RedTeamConfig.load(config)
     console.print(
         f"[bold]Agent Red Team[/bold] — attacking [cyan]{cfg.agent}[/cyan] "

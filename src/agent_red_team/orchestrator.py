@@ -33,6 +33,7 @@ from agent_red_team.eval.coverage import CoverageMap
 from agent_red_team.eval.judge import JudgePanel
 from agent_red_team.eval.oracle import check as oracle_check
 from agent_red_team.llm.client import LLMClient
+from agent_red_team.observability.tracing import span
 from agent_red_team.postprocess.dedup import Embedder, dedupe
 from agent_red_team.postprocess.minimize import minimize
 from agent_red_team.proxy.injector import inject
@@ -110,10 +111,11 @@ class Orchestrator:
             else:
                 payload = paygen.generate(family, amap, surface, seed)
 
-            run = self._run_target(target_client, amap.canary, payload, defense)
-            verdict = oracle_check(run.output, run.tool_calls, amap)
-            if verdict is None:  # grey-zone → judge panel decides
-                verdict = judge.judge(run.output, amap.must_never)
+            with span("attempt", seed=seed, family=family.value, surface=surface):
+                run = self._run_target(target_client, amap.canary, payload, defense)
+                verdict = oracle_check(run.output, run.tool_calls, amap)
+                if verdict is None:  # grey-zone → judge panel decides
+                    verdict = judge.judge(run.output, amap.must_never)
 
             bandit.update(family, verdict.score)
             coverage.mark(surface, family)
