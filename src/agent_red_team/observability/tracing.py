@@ -11,6 +11,7 @@ problem must never break a campaign.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 
@@ -20,9 +21,13 @@ from opentelemetry import trace
 def init_tracing(service_name: str = "agent-red-team") -> None:
     """Configure the OpenTelemetry provider and OTLP (Langfuse) exporter.
 
-    The exporter honours ``OTEL_EXPORTER_OTLP_ENDPOINT`` (point it at Langfuse).
+    No-op unless ``OTEL_EXPORTER_OTLP_ENDPOINT`` is set — so a plain local run
+    stays silent (no collector to connect to) instead of spamming export
+    errors. Point that env var at your Langfuse/OTLP endpoint to enable it.
     Any setup failure is swallowed — telemetry is optional.
     """
+    if not os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+        return
     try:
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
         from opentelemetry.sdk.resources import Resource
