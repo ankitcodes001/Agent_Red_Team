@@ -59,6 +59,10 @@ class RedTeamConfig(BaseModel):
     target: TargetConfig = Field(default_factory=TargetConfig)
     budget: BudgetConfig = Field(default_factory=BudgetConfig)
     models: ModelsConfig = Field(default_factory=ModelsConfig)
+    # Consult the LLM judge on grey-zone attempts (needs the judge model /
+    # API key). Off by default so a campaign runs fully local and keyless —
+    # grey-zone attempts simply score 0 without it.
+    use_judge: bool = False
 
     @classmethod
     def load(cls, path: str | Path) -> RedTeamConfig:

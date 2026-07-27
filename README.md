@@ -38,24 +38,44 @@ See [`docs/design.md`](docs/design.md) for the full design.
 
 ## Status
 
-🚧 **Early development (v0.1).** Not yet usable. Building in the open. Star to follow along.
+🟢 **v0.1 — the demo pipeline runs end-to-end, fully local on Ollama.** Point a
+campaign at the bundled vulnerable agent and it evolves attacks, proves breaks
+with a deterministic canary, and writes a scorecard. Building in the open — star
+to follow along.
 
-Roadmap to first release:
-- [ ] Bundled vulnerable demo agent + fake tools
-- [ ] Injection proxy (MCP mode)
-- [ ] Attack families + PayloadGen + GA mutator + bandit router
-- [ ] Oracle (canary + forbidden-tool watch) + judge panel
-- [ ] Dedup + minimize
-- [ ] OpenTelemetry / Langfuse tracing
-- [ ] `scorecard.html` + README badge
+What works today:
+- [x] Bundled vulnerable demo agent (ReAct loop) + fake tools, with `naked` /
+      `sandwich` / `spotlight` defense variants to compare
+- [x] 6 attack families + PayloadGen (local LLM) + GA mutator + UCB1 bandit router
+- [x] Injection at the tool-result boundary (poisons only the targeted surface)
+- [x] Oracle (canary + forbidden-tool watch) + optional 3-LLM judge panel
+- [x] Dedup (embed + cluster) + minimize (delta-debug) → unique, actionable findings
+- [x] OpenTelemetry / Langfuse tracing (best-effort, off by default)
+- [x] `scorecard.html` + CI gate
 
-## Quickstart (planned)
+On the roadmap:
+- [ ] Real MCP-server targets (`proxy/mcp_proxy`) beyond the bundled demo
+- [ ] AgentDojo adapter — run the adaptive attacker against its defended agents
+- [ ] README badge from the latest campaign
+
+## Quickstart
+
+Runs fully local — no API keys. Needs [uv](https://docs.astral.sh/uv/) and
+[Ollama](https://ollama.com).
 
 ```bash
+ollama pull llama3.1:8b          # or edit models.* in the config for any model
 uv sync
-uv run redteam run --target examples/demo --config examples/redteam.yaml
-open scorecard.html
+uv run redteam run -c examples/redteam.yaml
 ```
+
+The campaign attacks the bundled demo agent and prints a scorecard (ASR,
+attempts-to-first-break, coverage, unique findings), then writes `scorecard.html`.
+
+Swap `models.target` (e.g. to `anthropic/claude-haiku-4-5`) to compare how a
+stronger model holds up against the *same* attacks. Turn on `use_judge` once a
+judge model / API key is configured to catch grey-zone breaks the oracle can't
+prove deterministically.
 
 ## Responsible use
 
