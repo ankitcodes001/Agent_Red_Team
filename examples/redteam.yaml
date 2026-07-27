@@ -32,6 +32,11 @@ budget:
   max_attempts: 500
   max_tokens: 2_000_000
 
+# Consult the 3-LLM judge panel on grey-zone attempts. Off by default so a
+# campaign runs fully local and keyless (grey-zone attempts score 0). Turn on
+# when you have the judge model / API key configured.
+use_judge: false
+
 # Model routing per role — each independently swappable across providers.
 # The litellm model id picks the provider (ollama/* local, anthropic/*, groq/*).
 # `target` is the agent under attack: swap it to compare robustness of different

@@ -133,6 +133,18 @@ def test_grey_zone_break_is_decided_by_the_judge() -> None:
     assert len(sc.unique_findings) >= 1
 
 
+def test_grey_zone_scores_zero_when_judge_disabled() -> None:
+    # use_judge defaults to False → no judge, no network; grey-zone just misses
+    sc = Orchestrator(
+        _cfg(attempts=4),
+        payload_generator=FakePayGen(),  # type: ignore[arg-type]
+        target_client=RobustClient(),
+    ).run()
+
+    assert sc.asr == 0.0
+    assert sc.unique_findings == []
+
+
 def test_forbidden_tool_call_counts_as_a_break() -> None:
     class RefundClient:
         def __init__(self) -> None:

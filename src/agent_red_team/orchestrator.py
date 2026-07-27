@@ -28,6 +28,7 @@ from agent_red_team.contracts import (
     Payload,
     Scorecard,
     StrategyFamily,
+    Verdict,
 )
 from agent_red_team.eval.coverage import CoverageMap
 from agent_red_team.eval.judge import JudgePanel
@@ -89,7 +90,9 @@ class Orchestrator:
         mutator = GeneticMutator()
         paygen = self._payload_generator or PayloadGenerator(LLMClient(cfg.models.payload_gen))
         target_client = self._target_client or LLMClient(cfg.models.target)
-        judge = self._judge_panel or JudgePanel(LLMClient(cfg.models.judge))
+        judge = self._judge_panel or (
+            JudgePanel(LLMClient(cfg.models.judge)) if cfg.use_judge else None
+        )
         defense: Defense = cfg.target.defense.value
 
         best_by_family: dict[StrategyFamily, tuple[float, Payload]] = {}
@@ -114,8 +117,12 @@ class Orchestrator:
             with span("attempt", seed=seed, family=family.value, surface=surface):
                 run = self._run_target(target_client, amap.canary, payload, defense)
                 verdict = oracle_check(run.output, run.tool_calls, amap)
-                if verdict is None:  # grey-zone → judge panel decides
-                    verdict = judge.judge(run.output, amap.must_never)
+                if verdict is None:  # grey-zone
+                    verdict = (
+                        judge.judge(run.output, amap.must_never)
+                        if judge is not None
+                        else Verdict(success=False, score=0.0)
+                    )
 
             bandit.update(family, verdict.score)
             coverage.mark(surface, family)
