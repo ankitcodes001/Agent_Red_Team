@@ -32,8 +32,12 @@ budget:
   max_attempts: 500
   max_tokens: 2_000_000
 
-# Model routing. Cheap local model for the many payload-gen calls;
-# a stronger model for the judge panel.
+# Model routing per role — each independently swappable across providers.
+# The litellm model id picks the provider (ollama/* local, anthropic/*, groq/*).
+# `target` is the agent under attack: swap it to compare robustness of different
+# models against the same attacks. Test on Ollama first (free, local), then
+# point `target` at anthropic/claude-* to see how a stronger model holds up.
 models:
-  payload_gen: "ollama/llama3.1:8b"
-  judge: "groq/llama-3.3-70b-versatile"
+  target: "ollama/llama3.1:8b"          # the agent being attacked — swap to compare
+  payload_gen: "ollama/llama3.1:8b"     # attacker (thousands of calls — keep cheap/local)
+  judge: "groq/llama-3.3-70b-versatile" # grey-zone vote

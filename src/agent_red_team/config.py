@@ -15,10 +15,19 @@ class TargetMode(StrEnum):
     HTTP = "http"
 
 
+class DefenseMode(StrEnum):
+    NAKED = "naked"
+    SANDWICH = "sandwich"
+    SPOTLIGHT = "spotlight"
+
+
 class TargetConfig(BaseModel):
     mode: TargetMode = TargetMode.DEMO
     mcp_url: str | None = None
     http_url: str | None = None
+    # demo-target mitigation to attack — swap to compare adaptive vs static
+    # across defense strength (the whole thesis of the tool).
+    defense: DefenseMode = DefenseMode.NAKED
 
 
 class BudgetConfig(BaseModel):
@@ -27,6 +36,15 @@ class BudgetConfig(BaseModel):
 
 
 class ModelsConfig(BaseModel):
+    """Model routing per role — each independently swappable across providers.
+
+    A litellm model id selects the provider (``ollama/*`` local, ``anthropic/*``,
+    ``groq/*``). ``target`` is the agent under attack: swap it to compare how
+    robust different models are against the *same* attacks (e.g. run a campaign
+    on ``ollama/llama3.1:8b`` first, then ``anthropic/claude-haiku-4-5``).
+    """
+
+    target: str = "ollama/llama3.1:8b"
     payload_gen: str = "ollama/llama3.1:8b"
     judge: str = "groq/llama-3.3-70b-versatile"
 
