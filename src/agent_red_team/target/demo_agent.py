@@ -92,14 +92,7 @@ def _format_observation(result: str, defense: Defense) -> str:
 
 def _default_runner(tool_name: str, raw_args: str) -> str:
     """Call a real demo tool with no injection — used for clean/warmup runs."""
-    args = [a.strip().strip('"').strip("'") for a in raw_args.split(",") if a.strip()]
-    fn = getattr(demo_tools, tool_name, None)
-    if fn is None:
-        return f"error: unknown tool {tool_name!r}"
-    try:
-        return str(fn(*args))
-    except TypeError as exc:
-        return f"error: bad args for {tool_name}: {exc}"
+    return demo_tools.call(tool_name, raw_args)
 
 
 class DemoAgent:

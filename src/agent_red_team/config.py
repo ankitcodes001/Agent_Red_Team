@@ -15,10 +15,19 @@ class TargetMode(StrEnum):
     HTTP = "http"
 
 
+class DefenseMode(StrEnum):
+    NAKED = "naked"
+    SANDWICH = "sandwich"
+    SPOTLIGHT = "spotlight"
+
+
 class TargetConfig(BaseModel):
     mode: TargetMode = TargetMode.DEMO
     mcp_url: str | None = None
     http_url: str | None = None
+    # demo-target mitigation to attack — swap to compare adaptive vs static
+    # across defense strength (the whole thesis of the tool).
+    defense: DefenseMode = DefenseMode.NAKED
 
 
 class BudgetConfig(BaseModel):

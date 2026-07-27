@@ -16,12 +16,32 @@ console = Console()
 @app.command()
 def run(
     config: str = typer.Option(..., "--config", "-c", help="Path to redteam.yaml"),
-    target: str = typer.Option("examples/demo", "--target", "-t", help="Target id"),
     out: str = typer.Option("scorecard.html", "--out", "-o", help="Report path"),
 ) -> None:
-    """Run a red-team campaign and write a scorecard."""
-    console.print("[bold]Agent Red Team[/bold] — campaign runner (not yet implemented)")
-    raise typer.Exit(code=1)
+    """Run a red-team campaign and print a scorecard summary."""
+    from rich.table import Table
+
+    from agent_red_team.config import RedTeamConfig
+    from agent_red_team.orchestrator import Orchestrator
+
+    cfg = RedTeamConfig.load(config)
+    console.print(
+        f"[bold]Agent Red Team[/bold] — attacking [cyan]{cfg.agent}[/cyan] "
+        f"(target={cfg.models.target}, defense={cfg.target.defense.value}, "
+        f"budget={cfg.budget.max_attempts})"
+    )
+    scorecard = Orchestrator(cfg).run()
+
+    table = Table(title="Scorecard")
+    table.add_column("metric")
+    table.add_column("value", justify="right")
+    table.add_row("ASR", f"{scorecard.asr:.0%}")
+    table.add_row("attempts", str(scorecard.total_attempts))
+    table.add_row("attempts-to-first-break", str(scorecard.attempts_to_first_break))
+    table.add_row("unique findings", str(len(scorecard.unique_findings)))
+    table.add_row("coverage", f"{scorecard.coverage_pct:.0%}")
+    console.print(table)
+    console.print(f"[dim](HTML report → {out} lands in the next batch)[/dim]")
 
 
 @app.command()
