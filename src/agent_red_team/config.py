@@ -27,6 +27,15 @@ class BudgetConfig(BaseModel):
 
 
 class ModelsConfig(BaseModel):
+    """Model routing per role — each independently swappable across providers.
+
+    A litellm model id selects the provider (``ollama/*`` local, ``anthropic/*``,
+    ``groq/*``). ``target`` is the agent under attack: swap it to compare how
+    robust different models are against the *same* attacks (e.g. run a campaign
+    on ``ollama/llama3.1:8b`` first, then ``anthropic/claude-haiku-4-5``).
+    """
+
+    target: str = "ollama/llama3.1:8b"
     payload_gen: str = "ollama/llama3.1:8b"
     judge: str = "groq/llama-3.3-70b-versatile"
 
