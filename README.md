@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Red_Team.png" alt="Agent Red Team — offensive testing for AI agents" width="640">
+</p>
+
 <h1 align="center">Agent Red Team</h1>
 
 <p align="center">

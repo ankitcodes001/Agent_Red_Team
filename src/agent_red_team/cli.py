@@ -24,6 +24,7 @@ def run(
     from agent_red_team.config import RedTeamConfig
     from agent_red_team.observability.tracing import init_tracing
     from agent_red_team.orchestrator import Orchestrator
+    from agent_red_team.report.scorecard import render_html
 
     init_tracing()
     cfg = RedTeamConfig.load(config)
@@ -32,7 +33,16 @@ def run(
         f"(target={cfg.models.target}, defense={cfg.target.defense.value}, "
         f"budget={cfg.budget.max_attempts})"
     )
-    scorecard = Orchestrator(cfg).run()
+
+    try:
+        scorecard = Orchestrator(cfg).run()
+    except Exception as exc:  # noqa: BLE001 - CLI boundary: no tracebacks for users
+        console.print(f"[bold red]Campaign failed:[/bold red] {type(exc).__name__}: {exc}")
+        console.print(
+            "[dim]Is the model server reachable? For Ollama, check `ollama list` "
+            "and that the model in models.target is pulled.[/dim]"
+        )
+        raise typer.Exit(code=1) from exc
 
     table = Table(title="Scorecard")
     table.add_column("metric")
@@ -43,7 +53,9 @@ def run(
     table.add_row("unique findings", str(len(scorecard.unique_findings)))
     table.add_row("coverage", f"{scorecard.coverage_pct:.0%}")
     console.print(table)
-    console.print(f"[dim](HTML report → {out} lands in the next batch)[/dim]")
+
+    render_html(scorecard, out)
+    console.print(f"[green]HTML report written →[/green] {out}")
 
 
 @app.command()
