@@ -21,7 +21,7 @@ uv.lock
 .ruff_cache/
 
 # runtime artifacts
-scorecard.html
+scorecard*.html
 runs/
 *.log
 
